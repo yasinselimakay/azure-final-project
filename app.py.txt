@@ -1,0 +1,30 @@
+import os
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+
+# .env dosyasındaki gizli değişkenleri yükle
+load_dotenv()
+
+app = Flask(__name__)
+
+# AZURE GEREKSİNİMİ: Veritabanı bilgilerini environment variable'dan alıyoruz
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+# Veritabanı Tablosu (Model)
+class Kitap(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    isim = db.Column(db.String(100), nullable=False)
+    yazar = db.Column(db.String(100), nullable=False)
+
+# Sayfalar
+@app.route('/')
+def index():
+    kitaplar = Kitap.query.all()
+    return f"<h1>Kitap Listesi</h1><ul>" + "".join([f"<li>{k.isim} - {k.yazar}</li>" for k in kitaplar]) + "</ul>"
+
+if __name__ == '__main__':
+    app.run(debug=True)
